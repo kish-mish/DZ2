@@ -3,7 +3,7 @@
 #include <math.h>
 #include "glut.h"
 
-#define PI 3.14
+#define PI 3.14159
 
 using namespace std;
 
@@ -25,11 +25,11 @@ void render(void)
 	for (int i = 0; i < b; i++)
 	{
 		int l = 0;
-		while (p[i].arr[l] > 0)
+		while (p[i].arr[l] != -1)
 		{
 			glBegin(GL_LINES);
 				glVertex2f(p[i].x*0.75, p[i].y*0.75);
-				glVertex2f(p[p[i].arr[l]-1].x*0.75, p[p[i].arr[l]-1].y*0.75);
+				glVertex2f(p[p[i].arr[l]].x*0.75, p[p[i].arr[l]].y*0.75);
 			glEnd();
 			l++;
 		}
@@ -45,26 +45,63 @@ void render(void)
 	glFlush();
 }
 
+bool search(int *arr,int n)
+{
+	for (int i = 0; i < b; i++)
+	{
+		if (arr[i] == n)
+			return true;
+	}
+	return false;
+}
+
 int main(int argc, char **argv)
 {
 	cout << "How many points?" << endl;
-	int f,flag;
+	int f,flag,k;
 	cin>>b;
 	p = new point[b];
 	float fi = (2 * PI) / b;
 	float angel = 0.0;
 	for (int i = 0; i < b; i++)
 	{
-		cout << "Enter point with which "<<i+1<<" is connected: "<<endl;
 		p[i].arr = new int[b];
+		for(int j=0;j<b;j++)
+			p[i].arr[j] =  -1 ;
+	}
+	for (int i = 0; i < b; i++)
+	{
+		cout << "Enter point with which "<<i+1<<" is connected: "<<endl;
 		p[i].x = cos(angel);
 		p[i].y = sin(angel);
-		int l = 0;
+		int l;
+		for (l = 0; l < b; l++)
+		{
+			if (p[i].arr[l] == -1)
+				break;
+		}
 		while (true)
 		{
 			cin >> f;
-			if ((f > 0) && (f <= b))
-				p[i].arr[l] = f;
+			f--;
+			if ((f >= 0) && (f < b) && (f != i))
+			{
+				if (search(p[i].arr, f))
+					cout << "This number is available" << endl;
+				else
+				{
+					p[i].arr[l] = f;
+					for (int j = 0; j < b; j++)
+					{
+						if (p[f].arr[j] == -1)
+						{
+							p[f].arr[j] = i;
+							break;
+						}
+					}
+					l++;
+				}
+			}
 			else cout << "Invalid number" << endl;
 			cout << "This is all?" << endl << "1-Yes\\2-No" << endl;
 			while (true)
@@ -76,10 +113,30 @@ int main(int argc, char **argv)
 			}
 			if (flag == 1)
 				break;
-			l++;
 		}
 		angel += fi;
 	}
+	flag = 0;
+	for (int i = 0; i < b; i++)
+	{
+		k = 0;
+		for (int j = 0; j < b; j++)
+		{
+			if (p[i].arr[j] != -1)
+			{
+				k++;
+			}
+			else break;
+		}
+		if (k < ((float)b - 1) / 2.0)
+		{
+			cout << "Graph is not connected" << endl;
+			break;
+		}
+		else flag++;
+	}
+	if (flag == b)
+		cout << "Graph is connected" << endl;
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
 	glutInitWindowSize(600,600);
