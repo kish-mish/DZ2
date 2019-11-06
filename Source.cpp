@@ -18,6 +18,7 @@ public:
 };
 
 point *p;
+int *pre;
 
 void render(void)
 {
@@ -55,12 +56,41 @@ bool search(int *arr,int n)
 	return false;
 }
 
+void connected(int n,int k)
+{
+	int flag;
+	for (int i = 0; i < n; i++)
+	{
+		if (p[k].arr[i] != -1)
+		{
+			flag = 0;
+			for (int j=0;j<n;j++)
+				if (pre[j]==p[k].arr[i])
+				{
+					flag = 1;
+					break;
+				}
+			if (flag != 1)
+			{
+				for (int j = 0; j < n; j++)
+					if (pre[j] == -1)
+					{
+						pre[j] = p[k].arr[i];
+						break;
+					}
+				connected(n, p[k].arr[i]);
+			}
+		}
+	}
+}
+
 int main(int argc, char **argv)
 {
 	cout << "How many points?" << endl;
 	int f,flag,k;
 	cin>>b;
 	p = new point[b];
+	pre = new int[b];
 	float fi = (2 * PI) / b;
 	float angel = 0.0;
 	for (int i = 0; i < b; i++)
@@ -69,6 +99,8 @@ int main(int argc, char **argv)
 		for(int j=0;j<b;j++)
 			p[i].arr[j] =  -1 ;
 	}
+	for (int j = 0; j<b; j++)
+		pre[j] = -1;
 	for (int i = 0; i < b; i++)
 	{
 		cout << "Enter point with which "<<i+1<<" is connected: "<<endl;
@@ -116,27 +148,17 @@ int main(int argc, char **argv)
 		}
 		angel += fi;
 	}
-	flag = 0;
+	pre[0] = 0;
+	int count = 0;
+	connected(b, 0);
 	for (int i = 0; i < b; i++)
 	{
-		k = 0;
-		for (int j = 0; j < b; j++)
-		{
-			if (p[i].arr[j] != -1)
-			{
-				k++;
-			}
-			else break;
-		}
-		if (k < ((float)b - 1) / 2.0)
-		{
-			cout << "Graph is not connected" << endl;
-			break;
-		}
-		else flag++;
+		if (pre[i] != -1)
+			count++;
 	}
-	if (flag == b)
+	if (count == b)
 		cout << "Graph is connected" << endl;
+	else cout << "Graph is not connected" << endl;
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
 	glutInitWindowSize(600,600);
